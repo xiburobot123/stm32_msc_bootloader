@@ -1,19 +1,26 @@
-# stm32_msc_bootloader
+这是一个为 STM32F103 微控制器设计的 USB大容量存储设备（MSC）Bootloader。它的核心目标是让STM32F103在启动时被电脑识别为一个U盘，用户只需将新的固件文件（.bin格式）拖拽进去，即可完成程序升级。
+✨ 核心功能
 
-USB Mass Storage Bootloader for STM32F103 microcontrollers.
+    U盘拖拽下载：这是项目的核心。Bootloader运行后，MCU会模拟成一个U盘，你直接把编译好的 .bin 文件复制或拖拽到该“U盘”中，Bootloader便会自动将文件写入到MCU的内部Flash中。
 
-# Usage
+    预编译固件支持：项目提供了预编译的 .bin 文件，如果你不想从源码编译，可以直接使用它来烧录Bootloader。
 
-Compile with IAR EWARM or use pre-compiled bin.
+    USB复位支持：在项目后期的提交中，增加了对USB复位的支持，提升了与不同主机的兼容性。
 
-The microcontroller would act it self as a USB Mass Storage device, user can just drag'n'drop the new binary file into the emulated flash drive.
+⚙️ 工作原理与关键细节
 
-The bootloader is supposed to be flashed to 0x08000000 (Flash start address), user application will be flashed to 0x08004000 (defined in FAT16.h). Remember to use NVIC_SetVectorTable(NVIC_VectTab_FLASH,0x4000) to remap the interrupt vector table in the user application.
+    Flash空间划分：Bootloader程序需要烧录到Flash的起始地址 0x08000000，而用户应用程序则会被烧录到 0x08004000 开始的区域（该地址在 FAT16.h 文件中定义）。
 
-# License
+    中断向量表重映射：这是一个非常关键的步骤。因为应用程序的起始地址不再是 0x08000000，所以用户程序在启动时必须调用 NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x4000) 来重新映射中断向量表，否则中断将无法正常工作。
 
-The ST Standard Peripherial Library is licensed under ST's License.
+    文件系统：Bootloader内部集成了 FAT16 文件系统（FAT16.c），用于在模拟的U盘中管理文件。
 
-The FAT16.c is licensed under Freescale (NXP)'s License.
+🔧 技术要点
 
-Other source codes are licensed under MIT License.
+    目标芯片：项目明确针对 STM32F103 系列微控制器。
+
+    开发环境：需要使用 IAR EWARM 进行编译，或者直接使用预编译的 .bin 文件。
+
+    固件格式：用户应用程序需要编译为 .bin 格式文件，以便拖拽下载。
+
+    许可证：项目代码采用 MIT许可证，但其中包含的ST标准外设库和Freescale（NXP）的FAT16代码分别遵循其各自的许可证。
